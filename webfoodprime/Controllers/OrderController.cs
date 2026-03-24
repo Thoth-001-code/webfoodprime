@@ -21,25 +21,28 @@ namespace webfoodprime.Controllers
             _orderService = orderService;
         }
 
-        private string GetUserId()
-        {
-            return User.FindFirstValue(ClaimTypes.NameIdentifier);
-        }
+       
 
         // 🔥 Customer
+        // 🔥 TẠO ORDER
         [HttpPost]
-        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> Create(CreateOrderDTO dto)
         {
-            await _orderService.CreateOrder(GetUserId(), dto);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            await _orderService.CreateOrder(userId, dto);
+
             return Ok("Order created");
         }
 
         [HttpGet("my")]
-        [Authorize(Roles = "Customer")]
-        public async Task<IActionResult> MyOrders()
+        public async Task<IActionResult> GetMyOrders()
         {
-            return Ok(await _orderService.GetMyOrders(GetUserId()));
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var orders = await _orderService.GetMyOrders(userId);
+
+            return Ok(orders);
         }
 
         // 🔥 Admin
@@ -47,7 +50,10 @@ namespace webfoodprime.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateStatus(UpdateOrderStatusDTO dto)
         {
-            await _orderService.UpdateStatus(dto);
+            var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            await _orderService.UpdateStatus(int.Parse(adminId), dto);
+
             return Ok("Updated");
         }
     }

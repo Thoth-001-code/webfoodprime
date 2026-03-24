@@ -30,7 +30,6 @@ builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddAppServices();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IFoodService, FoodService>();
-builder.Services.AddScoped<IOrderService, OrderService>();
 
 
 //////////////////////////////////////////////////

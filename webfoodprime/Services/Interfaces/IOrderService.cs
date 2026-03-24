@@ -6,7 +6,10 @@ namespace webfoodprime.Services.Interfaces
     public interface IOrderService
     {
         Task CreateOrder(string userId, CreateOrderDTO dto);
-        Task<List<Order>> GetMyOrders(string userId);
-        Task UpdateStatus(UpdateOrderStatusDTO dto);
+
+        Task<IEnumerable<OrderResponseDTO>> GetMyOrders(string userId);
+
+        Task UpdateStatus(int adminUserId, UpdateOrderStatusDTO dto);
     }
 }
+ 

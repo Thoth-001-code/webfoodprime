@@ -20,10 +20,18 @@ namespace webfoodprime.Models
         [Required]
         public int AddressId { get; set; }
         public Address Address { get; set; }
+        // 🔷 Ghi chú đơn hàng (có thể null)
+        public string? Note { get; set; } // ghi chú đơn hàng
 
         // 🔷 Shipper (có thể null)
         public string? ShipperId { get; set; }
         public ApplicationUser? Shipper { get; set; }
+        // 🔷 Phương thức thanh toán
+
+        public PaymentMethod PaymentMethod { get; set; } // Wallet | Cash
+        // 🔥 Đã thanh toán chưa
+        public bool IsPaid { get; set; } = false;
+        public DateTime? PaidAt { get; set; }
 
         // 🔥 Trạng thái đơn hàng (DÙNG ENUM)
         [Required]

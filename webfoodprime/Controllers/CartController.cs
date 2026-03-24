@@ -8,7 +8,9 @@ using webfoodprime.Services.Interfaces;
    
 namespace webfoodprime.Controllers
 {
-   
+
+
+  
 
     [ApiController]
     [Route("api/[controller]")]
@@ -22,34 +24,36 @@ namespace webfoodprime.Controllers
             _cartService = cartService;
         }
 
-        private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        [HttpGet]
-        public async Task<IActionResult> GetCart()
+        private string GetUserId()
         {
-            var cart = await _cartService.GetCartByUserId(GetUserId());
-            return Ok(cart);
+            return User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddToCart(AddToCartDTO dto)
+        public async Task<IActionResult> Add(AddToCartDTO dto)
         {
             await _cartService.AddToCart(GetUserId(), dto);
-            return Ok(new { message = "Added to cart" });
+            return Ok("Added");
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateCartItem(UpdateCartDTO dto)
+        public async Task<IActionResult> Update(UpdateCartDTO dto)
         {
-            await _cartService.UpdateCartItem(GetUserId(), dto);
-            return Ok(new { message = "Cart updated" });
+            await _cartService.UpdateCart(GetUserId(), dto);
+            return Ok("Updated");
         }
 
-        [HttpDelete("{cartItemId}")]
-        public async Task<IActionResult> RemoveCartItem(int cartItemId)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Remove(int id)
         {
-            await _cartService.RemoveCartItem(GetUserId(), cartItemId);
-            return Ok(new { message = "Item removed" });
+            await _cartService.RemoveItem(GetUserId(), id);
+            return Ok("Removed");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            return Ok(await _cartService.GetCart(GetUserId()));
         }
     }
 }

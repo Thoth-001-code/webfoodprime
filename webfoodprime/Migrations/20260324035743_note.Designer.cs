@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace webfoodprime.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260324035743_note")]
+    partial class note
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -340,18 +343,6 @@ namespace webfoodprime.Migrations
                     b.Property<decimal>("FoodTotal")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<bool>("IsPaid")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("PaidAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PaymentMethod")
-                        .HasColumnType("int");
-
                     b.Property<string>("ShipperId")
                         .HasColumnType("nvarchar(450)");
 
@@ -445,23 +436,16 @@ namespace webfoodprime.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("Type")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
                     b.Property<int>("WalletId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("WalletId1")
                         .HasColumnType("int");
 
                     b.HasKey("TransactionId");
 
                     b.HasIndex("WalletId");
-
-                    b.HasIndex("WalletId1");
 
                     b.ToTable("Transactions");
                 });
@@ -634,10 +618,6 @@ namespace webfoodprime.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("webfoodprime.Models.Wallet", null)
-                        .WithMany("Transactions")
-                        .HasForeignKey("WalletId1");
-
                     b.Navigation("Wallet");
                 });
 
@@ -669,11 +649,6 @@ namespace webfoodprime.Migrations
             modelBuilder.Entity("webfoodprime.Models.Order", b =>
                 {
                     b.Navigation("OrderDetails");
-                });
-
-            modelBuilder.Entity("webfoodprime.Models.Wallet", b =>
-                {
-                    b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618
         }

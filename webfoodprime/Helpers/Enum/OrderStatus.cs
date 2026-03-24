@@ -5,8 +5,9 @@
         Pending,
         Confirmed,
         Preparing,
+        Ready,
         Delivering,
-        Completed,
+        Completed, 
         Cancelled
     }
 }

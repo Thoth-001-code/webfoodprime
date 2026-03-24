@@ -5,109 +5,145 @@ using webfoodprime.Helpers.Enum;
 using webfoodprime.Models;
 using webfoodprime.Services.Interfaces;
 
-
+ 
 namespace webfoodprime.Services.Implementations
 {
-   
-
     public class OrderService : IOrderService
     {
         private readonly AppDbContext _context;
-
-        public OrderService(AppDbContext context)
+        private readonly IPaymentService _paymentService;
+        public OrderService(AppDbContext context, IPaymentService paymentService)
         {
             _context = context;
+            _paymentService = paymentService;
         }
 
         public async Task CreateOrder(string userId, CreateOrderDTO dto)
         {
-            // 🔥 1. Lấy Cart kèm món
-            var cart = await _context.Carts
-                .Include(c => c.CartItems)
-                .ThenInclude(ci => ci.Food)
-                .FirstOrDefaultAsync(c => c.UserId == userId);
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
-            if (cart == null || !cart.CartItems.Any())
-                throw new Exception("Cart is empty");
-
-            // 🔥 2. Lấy Address
-            var address = await _context.Addresses
-                .FirstOrDefaultAsync(a => a.AddressId == dto.AddressId && a.UserId == userId);
-
-            if (address == null)
-                throw new Exception("Address not found or does not belong to user");
-
-            // 🔥 3. Tính tiền món
-            decimal foodTotal = cart.CartItems.Sum(ci => ci.Quantity * ci.Food.Price);
-
-            // 🔥 4. Tính phí ship (hardcode)
-            decimal shippingFee = 15000;
-
-            // 🔥 5. Tổng tiền
-            decimal total = foodTotal + shippingFee;
-
-            // 🔥 6. Kiểm tra ví
-            var wallet = await _context.Wallets
-                .FirstOrDefaultAsync(w => w.UserId == userId);
-
-            if (wallet == null || wallet.Balance < total)
-                throw new Exception("Not enough balance");
-
-            // 🔥 7. Tạo Order
-            var order = new Order
+            try
             {
-                UserId = userId,
-                AddressId = address.AddressId,
-                Status = OrderStatus.Pending,
-                FoodTotal = foodTotal,
-                ShippingFee = shippingFee,
-                TotalPrice = total,
-                CreatedAt = DateTime.UtcNow
-            };
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync(); // 🔹 cần save trước để có OrderId
+                // 1. Address
+                var address = await _context.Addresses
+                    .FirstOrDefaultAsync(a => a.AddressId == dto.AddressId && a.UserId == userId);
 
-            // 🔥 8. Tạo OrderDetails
-            var details = cart.CartItems.Select(ci => new OrderDetail
+                if (address == null)
+                    throw new Exception("Invalid address");
+
+                // 2. Cart
+                var cart = await _context.Carts
+                    .Include(c => c.CartItems)
+                    .ThenInclude(ci => ci.Food)
+                    .FirstOrDefaultAsync(c => c.UserId == userId);
+
+                if (cart == null || !cart.CartItems.Any())
+                    throw new Exception("Cart is empty");
+
+                // 3. Tính tiền
+                decimal foodTotal = cart.CartItems.Sum(ci => ci.Quantity * ci.Food.Price);
+
+                var shipping = await _context.ShippingFees.FirstOrDefaultAsync();
+                decimal shippingFee = shipping?.Fee ?? 15000;
+
+                decimal total = foodTotal + shippingFee;
+
+                // 4. Tạo Order
+                var order = new Order
+                {
+                    UserId = userId,
+                    AddressId = dto.AddressId,
+                    Note = dto.Note,
+                    Status = OrderStatus.Pending,
+                    FoodTotal = foodTotal,
+                    ShippingFee = shippingFee,
+                    TotalPrice = total,
+                    PaymentMethod = dto.PaymentMethod,
+                    IsPaid = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+
+                // 5. OrderDetails
+                var details = cart.CartItems.Select(ci => new OrderDetail
+                {
+                    OrderId = order.OrderId,
+                    FoodId = ci.FoodId,
+                    Quantity = ci.Quantity,
+                    Price = ci.Food.Price
+                });
+
+                _context.OrderDetails.AddRange(details);
+
+                // 6. PAYMENT LOGIC 🔥
+                if (dto.PaymentMethod == PaymentMethod.Wallet)
+                {
+                    await _paymentService.PayWithWallet(userId, order.OrderId);
+                }
+                // COD → không làm gì
+
+                // 7. Clear cart
+                _context.CartItems.RemoveRange(cart.CartItems);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
             {
-                OrderId = order.OrderId,
-                FoodId = ci.FoodId,
-                Quantity = ci.Quantity,
-                Price = ci.Food.Price
-            }).ToList();
-            _context.OrderDetails.AddRange(details);
-
-            // 🔥 9. Trừ tiền ví + tạo transaction
-            wallet.Balance -= total;
-            _context.Transactions.Add(new Transaction
-            {
-                WalletId = wallet.WalletId,
-                Amount = total,
-                Type = "Payment",
-                CreatedAt = DateTime.UtcNow
-            });
-
-            // 🔥 10. Xóa CartItems
-            _context.CartItems.RemoveRange(cart.CartItems);
-
-            await _context.SaveChangesAsync();
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
-        public async Task<List<Order>> GetMyOrders(string userId)
+        public async Task<IEnumerable<OrderResponseDTO>> GetMyOrders(string userId)
         {
-            return await _context.Orders
+            var orders = await _context.Orders
                 .Include(o => o.OrderDetails)
                 .ThenInclude(od => od.Food)
                 .Where(o => o.UserId == userId)
+                .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
+
+            // 🔥 MAP DTO (QUAN TRỌNG)
+            return orders.Select(o => new OrderResponseDTO
+            {
+                OrderId = o.OrderId,
+                TotalPrice = o.TotalPrice,
+                FoodTotal = o.FoodTotal,
+                ShippingFee = o.ShippingFee,
+                Status = o.Status.ToString(),
+                Note = o.Note,
+                CreatedAt = o.CreatedAt,
+
+                Items = o.OrderDetails.Select(od => new OrderDetailDTO
+                {
+                    FoodName = od.Food.FoodName,
+                    Price = od.Price,
+                    Quantity = od.Quantity
+                }).ToList()
+            });
         }
 
-        public async Task UpdateStatus(UpdateOrderStatusDTO dto)
+        public async Task UpdateStatus(int adminUserId, UpdateOrderStatusDTO dto)
         {
             var order = await _context.Orders.FindAsync(dto.OrderId);
 
             if (order == null)
                 throw new Exception("Order not found");
+
+            // 🔥 VALIDATE FLOW TRẠNG THÁI
+            var valid = order.Status switch
+            {
+                OrderStatus.Pending => dto.Status == OrderStatus.Confirmed,
+                OrderStatus.Confirmed => dto.Status == OrderStatus.Preparing,
+                OrderStatus.Preparing => dto.Status == OrderStatus.Ready,
+                _ => false
+            };
+
+            if (!valid)
+                throw new Exception("Invalid status transition");
 
             order.Status = dto.Status;
             order.UpdatedAt = DateTime.UtcNow;

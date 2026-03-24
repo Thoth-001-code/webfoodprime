@@ -127,5 +127,19 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Wallet>()
             .Property(w => w.Balance)
             .HasColumnType("decimal(18,2)");
+        // =========================
+        // 🔷 ENUM CONFIG (FIX LỖI CAST)
+        // =========================
+        builder.Entity<Order>()
+            .Property(o => o.Status)
+            .HasConversion<int>();
+
+        builder.Entity<Order>()
+            .Property(o => o.PaymentMethod)
+            .HasConversion<int>();
+
+        builder.Entity<Transaction>()
+            .Property(t => t.Type)
+            .HasConversion<int>();
     }
 }
