@@ -22,7 +22,7 @@ namespace webfoodprime.Services.Implementations
 
             if (cart == null)
             {
-                cart = new Cart
+                cart = new Cart 
                 {
                     UserId = userId,
                     CartItems = new List<CartItem>()

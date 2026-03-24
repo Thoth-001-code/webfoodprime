@@ -1,11 +1,16 @@
-﻿namespace webfoodprime.Models
+﻿using System.Text.Json.Serialization;
+
+namespace webfoodprime.Models
 {
     public class CartItem
 {
     public int CartItemId { get; set; }
 
     public int CartId { get; set; }
-    public Cart Cart { get; set; } // ✅ thêm
+
+
+        [JsonIgnore] // 🔹 tránh vòng lặp serialize
+        public Cart Cart { get; set; } // ✅ thêm
 
     public int FoodId { get; set; }
     public Food Food { get; set; } // ✅ thêm

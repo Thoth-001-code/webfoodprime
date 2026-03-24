@@ -5,6 +5,7 @@ namespace webfoodprime.Services.Interfaces
     public interface IAuthService
     {
         Task<string> Register(RegisterDTO model);
-        Task<string> Login(LoginDTO model);
+        Task<AuthResponseDTO> Login(LoginDTO model);
     }
 }
+ 

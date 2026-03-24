@@ -3,26 +3,36 @@ using webfoodprime.DTOs.Auth;
 using webfoodprime.Helpers;
 using webfoodprime.Models;
 using webfoodprime.Services.Interfaces;
+
+    using Microsoft.EntityFrameworkCore;
+
 namespace webfoodprime.Services.Implementations
 {
 
 
+ 
     public class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly JwtHelper _jwtHelper;
+        private readonly AppDbContext _context;
 
-        // 🔥 CONSTRUCTOR (BẮT BUỘC)
         public AuthService(
             UserManager<ApplicationUser> userManager,
-            JwtHelper jwtHelper)
+            JwtHelper jwtHelper,
+            AppDbContext context)
         {
             _userManager = userManager;
             _jwtHelper = jwtHelper;
+            _context = context;
         }
 
         public async Task<string> Register(RegisterDTO model)
         {
+            var exist = await _userManager.FindByEmailAsync(model.Email);
+            if (exist != null)
+                throw new Exception("Email already exists");
+
             var user = new ApplicationUser
             {
                 UserName = model.Email,
@@ -32,17 +42,29 @@ namespace webfoodprime.Services.Implementations
             var result = await _userManager.CreateAsync(user, model.Password);
 
             if (!result.Succeeded)
-            {
-                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                throw new Exception(errors);
-            }
+                throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
+            // 🔥 Gán role Customer
             await _userManager.AddToRoleAsync(user, "Customer");
+
+            // 🔥 TẠO WALLET + CART (CỰC QUAN TRỌNG)
+            _context.Wallets.Add(new Wallet
+            {
+                UserId = user.Id,
+                Balance = 0
+            });
+
+            _context.Carts.Add(new Cart
+            {
+                UserId = user.Id
+            });
+
+            await _context.SaveChangesAsync();
 
             return "Register success";
         }
 
-        public async Task<string> Login(LoginDTO model)
+        public async Task<AuthResponseDTO> Login(LoginDTO model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
 
@@ -56,7 +78,14 @@ namespace webfoodprime.Services.Implementations
 
             var roles = await _userManager.GetRolesAsync(user);
 
-            return _jwtHelper.GenerateToken(user, roles);
+            var token = _jwtHelper.GenerateToken(user, roles);
+
+            return new AuthResponseDTO
+            {
+                Token = token,
+                Email = user.Email,
+                Roles = roles.ToList()
+            };
         }
     }
 }

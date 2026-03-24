@@ -1,8 +1,13 @@
-﻿namespace webfoodprime.DTOs.Auth
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace webfoodprime.DTOs.Auth
 {
     public class LoginDTO
     {
+        [Required]
         public string Email { get; set; }
+
+        [Required]
         public string Password { get; set; }
     }
 }
