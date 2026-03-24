@@ -15,44 +15,56 @@ namespace webfoodprime.Services.Implementations
             _context = context;
         }
 
-        public async Task<List<Food>> GetAll()
+        public async Task<List<FoodResponseDTO>> GetAll(string baseUrl)
         {
-            return await _context.Foods.ToListAsync();
+            return await _context.Foods
+                .Select(f => new FoodResponseDTO
+                {
+                    FoodId = f.FoodId,
+                    FoodName = f.FoodName,
+                    Price = f.Price,
+                    ImageUrl = f.ImagePath != null ? baseUrl + f.ImagePath : null
+                })
+                .ToListAsync();
         }
 
-        public async Task<Food> GetById(int id)
+        public async Task<FoodResponseDTO> GetById(int id, string baseUrl)
         {
-            var food = await _context.Foods.FindAsync(id);
+            var f = await _context.Foods.FindAsync(id);
+            if (f == null) throw new Exception("Food not found");
 
-            if (food == null)
-                throw new Exception("Food not found");
-
-            return food;
+            return new FoodResponseDTO
+            {
+                FoodId = f.FoodId,
+                FoodName = f.FoodName,
+                Price = f.Price,
+                ImageUrl = f.ImagePath != null ? baseUrl + f.ImagePath : null
+            };
         }
 
-        public async Task Create(CreateFoodDTO dto)
+        public async Task Create(CreateFoodDTO dto, string imagePath)
         {
             var food = new Food
             {
                 FoodName = dto.FoodName,
                 Price = dto.Price,
-                ImagePath = dto.ImagePath
+                ImagePath = imagePath
             };
 
             _context.Foods.Add(food);
             await _context.SaveChangesAsync();
         }
 
-        public async Task Update(UpdateFoodDTO dto)
+        public async Task Update(int id, CreateFoodDTO dto, string imagePath)
         {
-            var food = await _context.Foods.FindAsync(dto.FoodId);
-
-            if (food == null)
-                throw new Exception("Food not found");
+            var food = await _context.Foods.FindAsync(id);
+            if (food == null) throw new Exception("Food not found");
 
             food.FoodName = dto.FoodName;
             food.Price = dto.Price;
-            food.ImagePath = dto.ImagePath;
+
+            if (imagePath != null)
+                food.ImagePath = imagePath;
 
             await _context.SaveChangesAsync();
         }
@@ -60,9 +72,7 @@ namespace webfoodprime.Services.Implementations
         public async Task Delete(int id)
         {
             var food = await _context.Foods.FindAsync(id);
-
-            if (food == null)
-                throw new Exception("Food not found");
+            if (food == null) throw new Exception("Food not found");
 
             _context.Foods.Remove(food);
             await _context.SaveChangesAsync();

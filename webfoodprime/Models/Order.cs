@@ -11,33 +11,31 @@ namespace webfoodprime.Models
         [Key]
         public int OrderId { get; set; }
 
-        // 🔷 Người đặt hàng (Customer)
-        [Required]
-        public string UserId { get; set; }
-        public ApplicationUser User { get; set; }
+        // 🔥 phân loại đơn
+        public OrderType OrderType { get; set; } = OrderType.Delivery;
 
-        // 🔷 Địa chỉ giao hàng
-        [Required]
-        public int AddressId { get; set; }
-        public Address Address { get; set; }
-        // 🔷 Ghi chú đơn hàng (có thể null)
-        public string? Note { get; set; } // ghi chú đơn hàng
+        // 🔷 Customer (nullable cho InStore)
+        public string? UserId { get; set; }
+        public ApplicationUser? User { get; set; }
 
-        // 🔷 Shipper (có thể null)
+        // 🔷 Address (nullable cho InStore)
+        public int? AddressId { get; set; }
+        public Address? Address { get; set; }
+
+        public string? Note { get; set; }
+
+        // 🔷 Shipper (chỉ dùng cho Delivery)
         public string? ShipperId { get; set; }
         public ApplicationUser? Shipper { get; set; }
-        // 🔷 Phương thức thanh toán
 
-        public PaymentMethod PaymentMethod { get; set; } // Wallet | Cash
-        // 🔥 Đã thanh toán chưa
+        public PaymentMethod PaymentMethod { get; set; }
+
         public bool IsPaid { get; set; } = false;
         public DateTime? PaidAt { get; set; }
 
-        // 🔥 Trạng thái đơn hàng (DÙNG ENUM)
         [Required]
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
-        // 💰 Tiền
         [Column(TypeName = "decimal(18,2)")]
         public decimal FoodTotal { get; set; }
 
@@ -47,14 +45,10 @@ namespace webfoodprime.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalPrice { get; set; }
 
-        // ⏱ Thời gian
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
         public DateTime? UpdatedAt { get; set; }
-
         public DateTime? DeliveredAt { get; set; }
 
-        // 📄 Chi tiết đơn hàng
         public List<OrderDetail> OrderDetails { get; set; } = new();
     }
 }

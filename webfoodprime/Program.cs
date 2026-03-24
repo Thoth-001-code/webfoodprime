@@ -110,6 +110,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 //////////////////////////////////////////////////
+///
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

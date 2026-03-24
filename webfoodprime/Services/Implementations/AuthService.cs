@@ -44,8 +44,15 @@ namespace webfoodprime.Services.Implementations
             if (!result.Succeeded)
                 throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
-            // 🔥 Gán role Customer
-            await _userManager.AddToRoleAsync(user, "Customer");
+            // 🔥 xử lý role
+            var role = string.IsNullOrEmpty(model.Role) ? "Customer" : model.Role;
+
+            // 🔥 validate role (tránh nhập bậy)
+            var validRoles = new[] { "Customer", "Shipper", "Admin" };
+            if (!validRoles.Contains(role))
+                throw new Exception("Invalid role");
+
+            await _userManager.AddToRoleAsync(user, role);
 
             // 🔥 TẠO WALLET + CART (CỰC QUAN TRỌNG)
             _context.Wallets.Add(new Wallet

@@ -2,12 +2,11 @@
 {
     public enum OrderStatus
     {
-        Pending,
-        Confirmed,
-        Preparing,
-        Ready,
-        Delivering,
-        Completed, 
-        Cancelled
+        Pending = 0,
+        Confirmed = 1,   // đã nhận, đang làm
+        Ready = 2,       // 🔥 đã làm xong, chờ shipper
+        Delivering = 3,
+        Completed = 4,
+        Cancelled = 5
     }
 }

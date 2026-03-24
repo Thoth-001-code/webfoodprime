@@ -56,5 +56,13 @@ namespace webfoodprime.Controllers
 
             return Ok("Updated");
         }
-    }
+
+        [HttpPost("instore")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateInStoreOrder(CreateInStoreOrderDTO dto)
+        {
+            await _orderService.CreateInStoreOrder(dto);
+            return Ok("In-store order created");
+        }
+    }////
 }

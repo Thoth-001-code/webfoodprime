@@ -4,6 +4,6 @@
     {
         public string FoodName { get; set; }
         public decimal Price { get; set; }
-        public string? ImagePath { get; set; }
+        public IFormFile Image { get; set; } // 🔥 QUAN TRỌNG
     }
 }
