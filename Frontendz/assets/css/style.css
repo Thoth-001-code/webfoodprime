@@ -1,0 +1,27 @@
+body {
+    background: #f5f6fa;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.card {
+    border-radius: 12px;
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.btn {
+    border-radius: 20px;
+}
+
+.food-card img {
+    height: 150px;
+    object-fit: cover;
+}
+
+.badge-status {
+    padding: 5px 10px;
+    border-radius: 10px;
+}

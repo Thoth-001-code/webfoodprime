@@ -11,7 +11,7 @@ namespace webfoodprime.Data
             var roleManager = service.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = service.GetRequiredService<UserManager<ApplicationUser>>();
 
-            string[] roles = { "Admin", "Customer", "Shipper" };
+            string[] roles = { "Admin", "Customer", "Shipper", "Staff" };
 
             foreach (var role in roles)
             {
@@ -32,6 +32,8 @@ namespace webfoodprime.Data
                 await userManager.CreateAsync(admin, "Admin@123");
                 await userManager.AddToRoleAsync(admin, "Admin");
             }
+
+
         }
     }
 }

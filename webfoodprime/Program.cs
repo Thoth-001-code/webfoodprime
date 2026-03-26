@@ -84,7 +84,19 @@ builder.Services.AddSwaggerGen(options =>
             new string[] {}
         }
     });
+}); 
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
 });
+
+
 
 //////////////////////////////////////////////////
 // 🔷 Controllers
@@ -113,7 +125,7 @@ using (var scope = app.Services.CreateScope())
 ///
 app.UseStaticFiles();
 app.UseHttpsRedirection();
-
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 

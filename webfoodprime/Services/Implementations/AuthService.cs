@@ -48,7 +48,7 @@ namespace webfoodprime.Services.Implementations
             var role = string.IsNullOrEmpty(model.Role) ? "Customer" : model.Role;
 
             // 🔥 validate role (tránh nhập bậy)
-            var validRoles = new[] { "Customer", "Shipper", "Admin" };
+            var validRoles = new[] { "Customer", "Shipper", "Admin" ,"Staff"};
             if (!validRoles.Contains(role))
                 throw new Exception("Invalid role");
 
