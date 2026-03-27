@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đơn đang giao - WebFoodPrime Shipper</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        .delivering-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .refresh-btn {
+            background: var(--info);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .order-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s;
+        }
+        
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .order-header {
+            padding: 1.2rem 1.5rem;
+            background: linear-gradient(135deg, var(--light), white);
+            border-bottom: 1px solid var(--gray-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .order-id-badge .badge {
+            font-weight: bold;
+            font-size: 1rem;
+            color: var(--primary);
+        }
+        
+        .order-id-badge .badge.delivering {
+            color: var(--info);
+        }
+        
+        .order-time {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-left: 0.5rem;
+        }
+        
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-badge.delivering {
+            background: #ffe5d0;
+            color: #fd7e14;
+        }
+        
+        .order-details {
+            padding: 1.2rem 1.5rem;
+            background: var(--light);
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .info-row .label {
+            font-weight: 600;
+            min-width: 100px;
+            color: var(--secondary);
+        }
+        
+        .info-row .value {
+            color: var(--dark);
+        }
+        
+        .order-items {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .order-items h4 {
+            margin-bottom: 0.8rem;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+        
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .order-footer {
+            padding: 1.2rem 1.5rem;
+            background: var(--light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .order-total {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .order-total strong {
+            color: var(--primary);
+        }
+        
+        .btn-complete-order {
+            padding: 0.6rem 1.2rem;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-complete-order:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: var(--radius-lg);
+            color: var(--gray);
+        }
+        
+        .empty-sub {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            color: var(--gray-light);
+        }
+        
+        .btn-view-available {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.6rem 1.2rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+        }
+        
+        @media (max-width: 768px) {
+            .order-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .order-footer {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .order-total {
+                justify-content: center;
+            }
+            
+            .info-row {
+                flex-direction: column;
+            }
+            
+            .info-row .label {
+                margin-bottom: 0.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/pages/shipper/dashboard.html">🚚 WebFoodPrime Shipper</a>
+            </div>
+            <div class="nav-links" id="navLinks"></div>
+            <div class="user-info" id="userInfo"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="delivering-header">
+                <h1>📦 Đơn hàng đang giao</h1>
+                <button onclick="Shipper.loadDeliveringOrders()" class="refresh-btn">
+                    🔄 Làm mới
+                </button>
+            </div>
+            
+            <div id="deliveringOrdersContainer" class="orders-container"></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebFoodPrime - Hệ thống giao hàng</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/shipper.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Auth.init();
+            const isAuth = await Auth.checkPageAccess(['Shipper']);
+            if (isAuth) {
+                await Shipper.loadDeliveringOrders();
+            }
+        });
+        
+        // Auto refresh every 30 seconds
+        let refreshInterval = setInterval(async () => {
+            if (window.location.pathname.includes('delivering.html')) {
+                await Shipper.loadDeliveringOrders();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng - WebFoodPrime</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/">🍔 WebFoodPrime</a>
+            </div>
+            <div class="nav-links" id="navLinks"></div>
+            <div class="user-info" id="userInfo"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="cart-page">
+                <h1>🛒 Giỏ hàng của bạn</h1>
+                
+                <div id="cartContainer" class="cart-container"></div>
+                
+                <div id="emptyCartMessage" class="empty-cart" style="display: none;">
+                    <p>🍽️ Giỏ hàng của bạn đang trống</p>
+                    <a href="/pages/user/menu.html" class="btn-shop-now">Tiếp tục mua sắm</a>
+                </div>
+                
+                <div id="cartSummary" class="cart-summary" style="display: none;">
+                    <div class="summary-details">
+                        <div class="summary-row">
+                            <span>Tạm tính:</span>
+                            <span id="subtotal">0đ</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Phí vận chuyển:</span>
+                            <span>15,000đ</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Tổng cộng:</span>
+                            <span id="total">0đ</span>
+                        </div>
+                    </div>
+                    <button onclick="User.proceedToCheckout()" class="btn-checkout">
+                        Tiến hành thanh toán
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebFoodPrime - Đặt đồ ăn online</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/user.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Auth.init();
+            const isAuth = await Auth.checkPageAccess(['Customer']);
+            if (isAuth) {
+                await User.loadCart();
+            }
+        });
+    </script>
+</body>
+</html>

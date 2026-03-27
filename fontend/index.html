@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebFoodPrime - Đặt đồ ăn online</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/">🍔 WebFoodPrime</a>
+            </div>
+            <div class="nav-links" id="navLinks"></div>
+            <div class="user-info" id="userInfo"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="hero">
+                <h1>Chào mừng đến với WebFoodPrime</h1>
+                <p>Đặt đồ ăn ngon, giao hàng nhanh chóng</p>
+                <div class="cta-buttons" id="ctaButtons">
+                    <a href="/pages/auth/login.html" class="btn btn-primary">Đăng nhập</a>
+                    <a href="/pages/auth/register.html" class="btn btn-secondary">Đăng ký</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebFoodPrime - Đặt đồ ăn online</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Auth.init();
+        });
+    </script>
+</body>
+</html>

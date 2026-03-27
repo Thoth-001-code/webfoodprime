@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý món ăn - WebFoodPrime Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        /* Additional Admin Foods Styles */
+        .foods-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .btn-add-food {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn-add-food:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .food-form-container {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .food-form-container h3 {
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+        
+        .form-group label .required {
+            color: var(--danger);
+            margin-left: 0.2rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--gray-light);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        .form-group input[type="file"] {
+            padding: 0.6rem;
+            background: var(--light);
+        }
+        
+        .image-preview {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--light);
+            border-radius: var(--radius-md);
+            display: none;
+        }
+        
+        .image-preview img {
+            max-width: 200px;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .current-image {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--light);
+            border-radius: var(--radius-md);
+        }
+        
+        .current-image p {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+        
+        .current-image img {
+            max-width: 150px;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .btn-submit, .btn-cancel {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-submit:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-cancel {
+            background: var(--gray-light);
+            color: var(--gray);
+        }
+        
+        .btn-cancel:hover {
+            background: var(--gray);
+            color: white;
+        }
+        
+        .foods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .food-admin-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .food-admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .food-image {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+            background: var(--light);
+        }
+        
+        .food-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .food-admin-card:hover .food-image img {
+            transform: scale(1.1);
+        }
+        
+        .no-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .food-details {
+            padding: 1.2rem;
+            flex: 1;
+        }
+        
+        .food-details h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+        
+        .food-details .price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .food-actions {
+            padding: 1rem 1.2rem;
+            background: var(--light);
+            display: flex;
+            gap: 0.8rem;
+            border-top: 1px solid var(--gray-light);
+        }
+        
+        .btn-edit, .btn-delete {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+        
+        .btn-edit {
+            background: var(--info);
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+        
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: var(--radius-lg);
+            color: var(--gray);
+        }
+        
+        .search-box {
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-box input {
+            width: 100%;
+            max-width: 300px;
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--gray-light);
+            border-radius: 50px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            
+            .foods-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .foods-header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/pages/admin/dashboard.html">🍔 WebFoodPrime Admin</a>
+            </div>
+            <div class="nav-links" id="navLinks"></div>
+            <div class="user-info" id="userInfo"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="foods-header">
+                <h1>🍕 Quản lý món ăn</h1>
+                <button onclick="Admin.showAddFoodForm()" class="btn-add-food">
+                    ➕ Thêm món ăn mới
+                </button>
+            </div>
+            
+            <!-- Search Box -->
+            <div class="search-box">
+                <input type="text" id="searchFood" placeholder="🔍 Tìm kiếm món ăn..." onkeyup="Admin.searchFoods()">
+            </div>
+            
+            <!-- Add Food Form -->
+            <div id="addFoodForm" class="food-form-container">
+                <h3>➕ Thêm món ăn mới</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tên món ăn <span class="required">*</span></label>
+                        <input type="text" id="foodName" placeholder="Nhập tên món ăn">
+                    </div>
+                    <div class="form-group">
+                        <label>Giá (VNĐ) <span class="required">*</span></label>
+                        <input type="number" id="foodPrice" placeholder="Nhập giá" step="1000">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Hình ảnh</label>
+                    <input type="file" id="foodImage" accept="image/jpeg,image/png,image/jpg" onchange="Admin.previewImage(this, 'addPreview')">
+                    <small style="color: #666; display: block; margin-top: 0.3rem;">
+                        Hỗ trợ: JPG, PNG. Dung lượng tối đa: 5MB
+                    </small>
+                    <div id="addPreview" class="image-preview"></div>
+                </div>
+                <div class="form-actions">
+                    <button onclick="Admin.createFood()" class="btn-submit">Thêm món ăn</button>
+                    <button onclick="Admin.hideAddFoodForm()" class="btn-cancel">Hủy</button>
+                </div>
+            </div>
+            
+            <!-- Edit Food Form -->
+            <div id="editFoodForm" class="food-form-container">
+                <h3>✏️ Sửa món ăn</h3>
+                <input type="hidden" id="editFoodId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tên món ăn <span class="required">*</span></label>
+                        <input type="text" id="editFoodName" placeholder="Nhập tên món ăn">
+                    </div>
+                    <div class="form-group">
+                        <label>Giá (VNĐ) <span class="required">*</span></label>
+                        <input type="number" id="editFoodPrice" placeholder="Nhập giá" step="1000">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Hình ảnh mới (để trống nếu không đổi)</label>
+                    <input type="file" id="editFoodImage" accept="image/jpeg,image/png,image/jpg" onchange="Admin.previewImage(this, 'editPreview')">
+                    <small style="color: #666; display: block; margin-top: 0.3rem;">
+                        Hỗ trợ: JPG, PNG. Dung lượng tối đa: 5MB
+                    </small>
+                    <div id="editPreview" class="image-preview"></div>
+                </div>
+                <div id="currentImage" class="current-image"></div>
+                <div class="form-actions">
+                    <button onclick="Admin.updateFood()" class="btn-submit">Cập nhật</button>
+                    <button onclick="Admin.hideEditFoodForm()" class="btn-cancel">Hủy</button>
+                </div>
+            </div>
+            
+            <!-- Foods List -->
+            <div id="foodsContainer" class="foods-grid"></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebFoodPrime - Hệ thống quản trị</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/admin.js"></script>
+    <script>
+        // Additional Admin functions for foods.html
+        Admin.searchFoods = function() {
+            const searchTerm = document.getElementById('searchFood').value.toLowerCase();
+            const foodCards = document.querySelectorAll('.food-admin-card');
+            
+            foodCards.forEach(card => {
+                const foodName = card.querySelector('.food-details h3').textContent.toLowerCase();
+                if (foodName.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        };
+        
+        Admin.previewImage = function(input, previewId) {
+            const preview = document.getElementById(previewId);
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.innerHTML = '';
+                preview.style.display = 'none';
+            }
+        };
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Auth.init();
+            const isAuth = await Auth.checkPageAccess(['Admin']);
+            if (isAuth) {
+                await Admin.loadFoods();
+            }
+        });
+    </script>
+</body>
+</html>

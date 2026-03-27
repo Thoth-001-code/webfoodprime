@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-  using Microsoft.AspNetCore.Authorization;
-   
-    using System.Security.Claims;
-    using webfoodprime.DTOs.Order;
-    using webfoodprime.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using webfoodprime.DTOs.Order;
+using webfoodprime.Services.Interfaces;
 
 namespace webfoodprime.Controllers
 {
-  
-
     [ApiController]
     [Route("api/[controller]")]
     public class OrderController : ControllerBase
@@ -21,11 +18,9 @@ namespace webfoodprime.Controllers
             _orderService = orderService;
         }
 
-       
-
-        // 🔥 Customer
-        // 🔥 TẠO ORDER
+        // 🔥 Customer - THÊM Authorize
         [HttpPost]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> Create(CreateOrderDTO dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -35,7 +30,9 @@ namespace webfoodprime.Controllers
             return Ok("Order created");
         }
 
+        // 🔥 Customer - THÊM Authorize
         [HttpGet("my")]
+        [Authorize(Roles = "Customer")]
         public async Task<IActionResult> GetMyOrders()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -45,7 +42,7 @@ namespace webfoodprime.Controllers
             return Ok(orders);
         }
 
-        // 🔥 Admin
+        // 🔥 Admin - Giữ nguyên
         [HttpPut("status")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateStatus(UpdateOrderStatusDTO dto)
@@ -57,6 +54,7 @@ namespace webfoodprime.Controllers
             return Ok("Updated");
         }
 
+        // 🔥 Admin - Giữ nguyên
         [HttpPost("instore")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateInStoreOrder(CreateInStoreOrderDTO dto)
@@ -64,5 +62,5 @@ namespace webfoodprime.Controllers
             await _orderService.CreateInStoreOrder(dto);
             return Ok("In-store order created");
         }
-    }////
+    }//
 }

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán - WebFoodPrime</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        /* CSS styles as before */
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 2rem;
+        }
+        
+        .checkout-summary, .checkout-form {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .checkout-summary h3, .checkout-form h3 {
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+            font-size: 1.3rem;
+        }
+        
+        .checkout-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .order-total {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 2px solid var(--primary);
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+        }
+        
+        .total-row.grand-total {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+        
+        .wallet-info-checkout {
+            background: var(--light);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .wallet-label {
+            font-weight: 500;
+            color: var(--secondary);
+        }
+        
+        .wallet-amount {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+        }
+        
+        .form-section h3 {
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+            display: inline-block;
+        }
+        
+        .address-option {
+            display: flex;
+            align-items: flex-start;
+            padding: 1rem;
+            border: 2px solid var(--gray-light);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .address-option:hover {
+            border-color: var(--primary);
+            background: var(--light);
+        }
+        
+        .address-option input {
+            margin-right: 1rem;
+            margin-top: 0.2rem;
+        }
+        
+        .address-detail {
+            flex: 1;
+        }
+        
+        .address-note {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+        
+        .payment-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid var(--gray-light);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .payment-option:hover {
+            border-color: var(--primary);
+            background: var(--light);
+        }
+        
+        .payment-option input {
+            margin-right: 1rem;
+        }
+        
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--gray-light);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: all 0.3s;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        .btn-add-address, .btn-save-address {
+            padding: 0.6rem 1.2rem;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-add-address:hover, .btn-save-address:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-place-order {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+        
+        .btn-place-order:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-place-order:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .no-address {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+        }
+        
+        @media (max-width: 768px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/">🍔 WebFoodPrime</a>
+            </div>
+            <div class="nav-links" id="navLinks"></div>
+            <div class="user-info" id="userInfo"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="checkout-page">
+                <h1>💳 Thanh toán đơn hàng</h1>
+                
+                <div class="checkout-grid">
+                    <div class="checkout-summary">
+                        <h3>🛒 Đơn hàng của bạn</h3>
+                        <div id="orderItems"></div>
+                        <div class="order-total">
+                            <div class="total-row">
+                                <span>Tạm tính:</span>
+                                <span id="checkoutSubtotal">0đ</span>
+                            </div>
+                            <div class="total-row">
+                                <span>Phí vận chuyển:</span>
+                                <span id="checkoutShipping">15,000đ</span>
+                            </div>
+                            <div class="total-row grand-total">
+                                <span>Tổng cộng:</span>
+                                <span id="checkoutTotal">0đ</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="checkout-form">
+                        <!-- 🔥 HIỂN THỊ SỐ DƯ VÍ -->
+                        <div class="wallet-info-checkout">
+                            <span class="wallet-label">💼 Số dư ví hiện tại:</span>
+                            <span class="wallet-amount" id="walletBalanceCheckout">0đ</span>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>📍 Địa chỉ giao hàng</h3>
+                            <div id="addressList"></div>
+                            <button type="button" onclick="User.showAddAddressForm()" class="btn-add-address">
+                                + Thêm địa chỉ mới
+                            </button>
+                            <div id="addAddressForm" style="display: none; margin-top: 1rem;">
+                                <input type="text" id="newAddress" placeholder="Địa chỉ cụ thể (số nhà, tên đường, phường/xã)" class="form-input">
+                                <input type="text" id="addressNote" placeholder="Ghi chú (tầng, số điện thoại...)" class="form-input">
+                                <button type="button" onclick="User.addNewAddress()" class="btn-save-address">Lưu địa chỉ</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>💳 Phương thức thanh toán</h3>
+                            <div class="payment-methods">
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="Wallet" checked>
+                                    <span>💼 Ví điện tử (trừ trực tiếp)</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="COD">
+                                    <span>💵 Thanh toán khi nhận hàng (COD)</span>
+                                </label>
+                            </div>
+                            <small style="color: #666; display: block; margin-top: 0.5rem;">
+                                * Khi thanh toán bằng ví, tiền sẽ được trừ ngay vào tài khoản của bạn
+                            </small>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>📝 Ghi chú đơn hàng</h3>
+                            <textarea id="orderNote" rows="3" placeholder="Ghi chú cho nhà hàng (ví dụ: ít đá, thêm tương ớt...)" class="form-textarea"></textarea>
+                        </div>
+                        
+                        <button type="button" onclick="User.placeOrder()" class="btn-place-order">
+                            ✅ Đặt hàng ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebFoodPrime - Đặt đồ ăn online</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/user.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Auth.init();
+            const isAuth = await Auth.checkPageAccess(['Customer']);
+            if (isAuth) {
+                await User.loadCheckout();
+            }
+        });
+    </script>
+</body>
+</html>

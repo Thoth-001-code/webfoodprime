@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - WebFoodPrime</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/">🍔 WebFoodPrime</a>
+            </div>
+            <div class="nav-links" id="navLinks"></div>
+            <div class="user-info" id="userInfo"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h2>Đăng ký tài khoản</h2>
+                    <p>Tham gia WebFoodPrime ngay hôm nay!</p>
+                </div>
+                
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required placeholder="Nhập email của bạn">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Mật khẩu</label>
+                        <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu" oninput="checkPasswordStrength()">
+                        <div class="password-requirements" id="passwordRequirements">
+                            <p>Yêu cầu mật khẩu:</p>
+                            <ul>
+                                <li id="reqUppercase" class="invalid">
+                                    <span class="requirement-icon">❌</span>
+                                    <span>Chứa ít nhất 1 chữ cái viết HOA (A-Z)</span>
+                                </li>
+                                <li id="reqLowercase" class="invalid">
+                                    <span class="requirement-icon">❌</span>
+                                    <span>Chứa ít nhất 1 chữ cái viết thường (a-z)</span>
+                                </li>
+                                <li id="reqNumber" class="invalid">
+                                    <span class="requirement-icon">❌</span>
+                                    <span>Chứa ít nhất 1 chữ số (0-9)</span>
+                                </li>
+                                <li id="reqSpecial" class="invalid">
+                                    <span class="requirement-icon">❌</span>
+                                    <span>Chứa ít nhất 1 ký tự đặc biệt (!@#$%^&*)</span>
+                                </li>
+                                <li id="reqLength" class="invalid">
+                                    <span class="requirement-icon">❌</span>
+                                    <span>Có ít nhất 6 ký tự</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Xác nhận mật khẩu</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Nhập lại mật khẩu" oninput="checkPasswordMatch()">
+                        <small id="matchMessage" style="color: #dc3545; display: block; margin-top: 0.3rem;"></small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="role">Đăng ký với tư cách</label>
+                        <select id="role" name="role">
+                            <option value="Customer">Khách hàng</option>
+                            <option value="Shipper">Shipper</option>
+                        </select>
+                        <small style="color: #666; display: block; margin-top: 0.3rem;">* Tài khoản Admin được cấp bởi quản trị viên</small>
+                    </div>
+                    
+                    <div class="demo-accounts">
+                        <p>📝 Mật khẩu mẫu (có thể dùng để test):</p>
+                        <code>Abc@123456</code>
+                        <code>Password@123</code>
+                        <code>Admin@2024</code>
+                    </div>
+                    
+                    <button type="submit" id="registerBtn" class="btn-submit">Đăng ký</button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Đã có tài khoản? <a href="/pages/auth/login.html">Đăng nhập ngay</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebFoodPrime - Đặt đồ ăn online</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script>
+        function updateRequirement(elementId, isValid) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                if (isValid) {
+                    element.className = 'valid';
+                    element.querySelector('.requirement-icon').textContent = '✅';
+                } else {
+                    element.className = 'invalid';
+                    element.querySelector('.requirement-icon').textContent = '❌';
+                }
+            }
+        }
+        
+        function checkPasswordStrength() {
+            const password = document.getElementById('password')?.value || '';
+            const strength = Utils.validatePasswordStrength(password);
+            
+            updateRequirement('reqUppercase', strength.hasUppercase);
+            updateRequirement('reqLowercase', strength.hasLowercase);
+            updateRequirement('reqNumber', strength.hasNumber);
+            updateRequirement('reqSpecial', strength.hasSpecial);
+            updateRequirement('reqLength', strength.hasMinLength);
+            
+            checkPasswordMatch();
+        }
+        
+        function checkPasswordMatch() {
+            const password = document.getElementById('password')?.value || '';
+            const confirm = document.getElementById('confirmPassword')?.value || '';
+            const matchMessage = document.getElementById('matchMessage');
+            
+            if (confirm.length > 0) {
+                if (password === confirm) {
+                    matchMessage.textContent = '✓ Mật khẩu khớp';
+                    matchMessage.style.color = '#28a745';
+                } else {
+                    matchMessage.textContent = '✗ Mật khẩu không khớp';
+                    matchMessage.style.color = '#dc3545';
+                }
+            } else {
+                matchMessage.textContent = '';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Auth.init();
+            
+            const registerForm = document.getElementById('registerForm');
+            const registerBtn = document.getElementById('registerBtn');
+            
+            if (registerForm) {
+                registerForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const email = document.getElementById('email').value.trim();
+                    const password = document.getElementById('password').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+                    const role = document.getElementById('role').value;
+                    
+                    if (!email || !password || !confirmPassword) {
+                        Utils.showNotification('Vui lòng nhập đầy đủ thông tin', 'warning');
+                        return;
+                    }
+                    
+                    if (!Utils.validateEmail(email)) {
+                        Utils.showNotification('Email không hợp lệ', 'error');
+                        return;
+                    }
+                    
+                    const passwordStrength = Utils.validatePasswordStrength(password);
+                    if (!passwordStrength.isValid) {
+                        Utils.showNotification('Mật khẩu không đáp ứng yêu cầu. Vui lòng xem hướng dẫn bên dưới.', 'error');
+                        return;
+                    }
+                    
+                    if (password !== confirmPassword) {
+                        Utils.showNotification('Mật khẩu xác nhận không khớp', 'error');
+                        return;
+                    }
+                    
+                    registerBtn.disabled = true;
+                    registerBtn.textContent = 'Đang xử lý...';
+                    
+                    await Auth.register(email, password, role);
+                    
+                    registerBtn.disabled = false;
+                    registerBtn.textContent = 'Đăng ký';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -365,6 +365,9 @@ namespace webfoodprime.Migrations
                     b.Property<decimal>("ShippingFee")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("StaffId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đơn hàng của tôi - WebFoodPrime</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/">🍔 WebFoodPrime</a>
+            </div>
+            <div class="nav-links" id="navLinks"></div>
+            <div class="user-info" id="userInfo"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="orders-page">
+                <h1>📦 Đơn hàng của tôi</h1>
+                
+                <div class="order-filters">
+                    <button class="filter-btn active" onclick="User.filterOrders('all', event)">Tất cả</button>
+                    <button class="filter-btn" onclick="User.filterOrders('Pending', event)">Chờ xác nhận</button>
+                    <button class="filter-btn" onclick="User.filterOrders('Confirmed', event)">Đã xác nhận</button>
+                    <button class="filter-btn" onclick="User.filterOrders('Ready', event)">Sẵn sàng</button>
+                    <button class="filter-btn" onclick="User.filterOrders('Delivering', event)">Đang giao</button>
+                    <button class="filter-btn" onclick="User.filterOrders('Completed', event)">Hoàn thành</button>
+                    <button class="filter-btn" onclick="User.filterOrders('Cancelled', event)">Đã hủy</button>
+                </div>
+                
+                <div id="ordersContainer" class="orders-container"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebFoodPrime - Đặt đồ ăn online</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/user.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Auth.init();
+            const isAuth = await Auth.checkPageAccess(['Customer']);
+            if (isAuth) {
+                await User.loadMyOrders();
+                // 🔥 CẬP NHẬT VÍ SAU KHI TẢI ĐƠN HÀNG
+                await User.loadWallet();
+            }
+        });
+        
+        // 🔥 TỰ ĐỘNG LÀM MỚI DỮ LIỆU MỖI 30 GIÂY
+        setInterval(async () => {
+            if (window.location.pathname.includes('orders.html')) {
+                await User.loadMyOrders();
+                await User.loadWallet();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

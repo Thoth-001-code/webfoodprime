@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý đơn hàng - WebFoodPrime Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        /* Admin Orders Styles */
+        .orders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .filter-group label {
+            font-weight: 500;
+            color: var(--secondary);
+        }
+        
+        .filter-group select {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray-light);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        
+        .order-admin-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s;
+        }
+        
+        .order-admin-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .order-header {
+            padding: 1.2rem 1.5rem;
+            background: linear-gradient(135deg, var(--light), white);
+            border-bottom: 1px solid var(--gray-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .order-badges {
+            display: flex;
+            gap: 0.8rem;
+        }
+        
+        .order-type {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .order-type.delivery {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .order-type.instore {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .order-info {
+            padding: 1.2rem 1.5rem;
+            background: var(--light);
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-row .label {
+            font-weight: 600;
+            min-width: 100px;
+            color: var(--secondary);
+        }
+        
+        .order-items {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .order-items h5 {
+            margin-bottom: 0.8rem;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+        
+        .order-footer {
+            padding: 1.2rem 1.5rem;
+            background: var(--light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .order-total {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .order-total span {
+            font-size: 0.9rem;
+        }
+        
+        .order-total .total {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1rem;
+        }
+        
+        .btn-confirm, .btn-ready, .btn-cancel {
+            padding: 0.5rem 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-confirm {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-ready {
+            background: var(--info);
+            color: white;
+        }
+        
+        .btn-cancel {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-confirm:hover, .btn-ready:hover, .btn-cancel:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        @media (max-width: 768px) {
+            .orders-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .order-footer {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .order-total {
+                justify-content: center;
+            }
+            
+            .info-row {
+                flex-direction: column;
+            }
+            
+            .info-row .label {
+                margin-bottom: 0.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/pages/admin/dashboard.html">🍔 WebFoodPrime Admin</a>
+            </div>
+            <div class="nav-links" id="navLinks"></div>
+            <div class="user-info" id="userInfo"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="orders-header">
+                <h1>📋 Quản lý đơn hàng</h1>
+                <div class="filter-group">
+                    <label>Lọc theo trạng thái:</label>
+                    <select id="statusFilter" onchange="Admin.filterOrders()">
+                        <option value="">Tất cả</option>
+                        <option value="Pending">Chờ xác nhận</option>
+                        <option value="Confirmed">Đã xác nhận</option>
+                        <option value="Ready">Sẵn sàng</option>
+                        <option value="Delivering">Đang giao</option>
+                        <option value="Completed">Hoàn thành</option>
+                        <option value="Cancelled">Đã hủy</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="ordersContainer" class="orders-container"></div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebFoodPrime - Hệ thống quản trị</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Auth.init();
+            const isAuth = await Auth.checkPageAccess(['Admin']);
+            if (isAuth) {
+                await Admin.loadAdminOrders();
+            }
+        });
+    </script>
+</body>
+</html>

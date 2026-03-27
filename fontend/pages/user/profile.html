@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ của tôi - WebFoodPrime</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        /* ... giữ nguyên các style ... */
+        .refresh-wallet {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+            transition: all 0.3s;
+        }
+        .refresh-wallet:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(180deg);
+        }
+        .balance-update {
+            animation: balancePulse 0.5s ease;
+        }
+        @keyframes balancePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); color: #ffd966; }
+            100% { transform: scale(1); }
+        }
+        /* ... giữ nguyên các style khác ... */
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/">🍔 WebFoodPrime</a>
+            </div>
+            <div class="nav-links" id="navLinks"></div>
+            <div class="user-info" id="userInfo"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="profile-page">
+                <h1>👤 Hồ sơ của tôi</h1>
+                
+                <div class="profile-tabs">
+                    <button class="tab-btn active" onclick="User.showTab('wallet', event)">💼 Ví điện tử</button>
+                    <button class="tab-btn" onclick="User.showTab('addresses', event)">📍 Địa chỉ</button>
+                </div>
+                
+                <div id="walletTab" class="tab-content active">
+                    <div class="wallet-balance">
+                        <h3>
+                            Số dư hiện tại
+                            <button onclick="User.loadWallet()" class="refresh-wallet" title="Làm mới">🔄</button>
+                        </h3>
+                        <div class="balance-amount" id="walletBalance">0đ</div>
+                    </div>
+                    
+                    <div class="deposit-section">
+                        <h3>💰 Nạp tiền vào ví</h3>
+                        <div class="deposit-form">
+                            <input type="number" id="depositAmount" placeholder="Nhập số tiền" min="10000" step="10000">
+                            <button onclick="User.deposit()" class="btn-deposit">Nạp tiền</button>
+                        </div>
+                        <small class="deposit-note">* Số tiền tối thiểu: 10,000đ</small>
+                    </div>
+                    
+                    <div class="transactions-section">
+                        <h3>📜 Lịch sử giao dịch</h3>
+                        <div id="transactionsList" class="transactions-list">
+                            <div class="empty-transactions">Đang tải...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="addressesTab" class="tab-content">
+                    <div class="addresses-section">
+                        <button onclick="User.showAddAddressForm()" class="btn-add-address">
+                            + Thêm địa chỉ mới
+                        </button>
+                        <div id="addAddressForm" class="add-address-form">
+                            <input type="text" id="newAddressProfile" placeholder="Địa chỉ cụ thể">
+                            <input type="text" id="addressNoteProfile" placeholder="Ghi chú">
+                            <button onclick="User.addNewAddressFromProfile()" class="btn-save-address">Lưu địa chỉ</button>
+                        </div>
+                        <div id="addressesList" class="addresses-list">
+                            <div class="empty-transactions">Đang tải...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+ 
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebFoodPrime - Đặt đồ ăn online</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/user.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Auth.init();
+            const isAuth = await Auth.checkPageAccess(['Customer']);
+            if (isAuth) {
+                await User.loadWallet();
+                await User.loadAddresses();
+            }
+        });
+        
+        // 🔥 CẬP NHẬT KHI TRANG ĐƯỢC FOCUS (quay lại từ tab khác)
+        window.addEventListener('focus', async () => {
+            console.log('🔄 Page focused, refreshing wallet...');
+            if (window.location.pathname.includes('profile.html')) {
+                await User.loadWallet();
+                await User.loadAddresses();
+            }
+        });
+        
+        // 🔥 TỰ ĐỘNG LÀM MỚI DỮ LIỆU MỖI 30 GIÂY
+        setInterval(async () => {
+            if (window.location.pathname.includes('profile.html')) {
+                console.log('🔄 Auto refresh wallet...');
+                await User.loadWallet();
+            }
+        }, 30000);
+        
+        // 🔥 KIỂM TRA localStorage ĐỂ CẬP NHẬT SỐ DƯ KHI VỪA VÀO TRANG
+        const lastBalance = localStorage.getItem('lastWalletBalance');
+        if (lastBalance) {
+            const balanceElem = document.getElementById('walletBalance');
+            if (balanceElem && balanceElem.textContent !== Utils.formatCurrency(parseFloat(lastBalance))) {
+                balanceElem.textContent = Utils.formatCurrency(parseFloat(lastBalance));
+                balanceElem.classList.add('balance-update');
+                setTimeout(() => balanceElem.classList.remove('balance-update'), 500);
+            }
+            // Xóa sau 5 giây
+            setTimeout(() => localStorage.removeItem('lastWalletBalance'), 5000);
+        }
+    </script>
+</body>
+</html>

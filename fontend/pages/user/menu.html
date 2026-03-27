@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thực đơn - WebFoodPrime</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/">🍔 WebFoodPrime</a>
+            </div>
+            <div class="nav-links" id="navLinks"></div>
+            <div class="user-info" id="userInfo"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="menu-hero">
+                <h1>🍕 Thực đơn đa dạng</h1>
+                <p>Chọn món ngon cho bữa ăn của bạn</p>
+            </div>
+
+            <div class="menu-controls">
+                <input type="text" id="searchInput" placeholder="🔍 Tìm món ăn..." class="search-input">
+                <div class="cart-badge">
+                    🛒 Giỏ hàng: <span id="cartCount">0</span>
+                    <a href="/pages/user/cart.html" class="btn-view-cart">Xem giỏ</a>
+                </div>
+            </div>
+
+            <div class="top-foods-section">
+                <h2>🔥 Món ăn nổi bật</h2>
+                <div id="topFoodsContainer" class="food-grid"></div>
+            </div>
+
+            <div class="all-foods-section">
+                <h2>📋 Tất cả món ăn</h2>
+                <div id="menuContainer" class="food-grid"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebFoodPrime - Đặt đồ ăn online</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/user.js"></script>
+    <script>
+        let allFoods = [];
+        
+        async function loadMenu() {
+            await User.loadTopFoods();
+            await User.loadMenu();
+            await User.updateCartCount();
+        }
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Auth.init();
+            const isAuth = await Auth.checkPageAccess(['Customer']);
+            if (isAuth) {
+                await loadMenu();
+                // Store all foods for search
+                allFoods = await API.getFoods();
+            }
+        });
+        
+        document.getElementById('searchInput')?.addEventListener('input', async (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = allFoods.filter(food => 
+                food.foodName.toLowerCase().includes(searchTerm)
+            );
+            const container = document.getElementById('menuContainer');
+            if (container) {
+                if (filtered.length === 0) {
+                    container.innerHTML = '<div class="empty-state">Không tìm thấy món ăn</div>';
+                } else {
+                    container.innerHTML = filtered.map(food => `
+                        <div class="food-card">
+                            <div class="image-wrapper">
+                                <img src="${food.imageUrl || '/assets/images/food-placeholder.jpg'}" 
+                                     alt="${food.foodName}" 
+                                     onerror="this.src='/assets/images/food-placeholder.jpg'">
+                            </div>
+                            <div class="food-info">
+                                <h3>${food.foodName}</h3>
+                                <p class="price">${Utils.formatCurrency(food.price)}</p>
+                                <button onclick="User.addToCart(${food.foodId})" class="btn-add-cart">
+                                    🛒 Thêm vào giỏ
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -13,10 +13,17 @@ namespace webfoodprime.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
+        private readonly IWalletService _walletService;
+        private readonly IOrderService _orderService;
 
-        public PaymentController(IPaymentService paymentService)
+        public PaymentController(
+            IPaymentService paymentService,
+            IWalletService walletService,
+            IOrderService orderService)
         {
             _paymentService = paymentService;
+            _walletService = walletService;
+            _orderService = orderService;
         }
 
         private string GetUserId()
@@ -28,8 +35,16 @@ namespace webfoodprime.Controllers
         public async Task<IActionResult> Pay(int orderId)
         {
             var userId = GetUserId();
+
+            // ✅ Kiểm tra số dư (vẫn giữ)
+            var wallet = await _walletService.GetWallet(userId);
+
+            // ⚠️ KHÔNG kiểm tra order ở đây vì PaymentService đã có kiểm tra
+            // PaymentService.PayWithWallet sẽ tự kiểm tra order tồn tại, đã thanh toán, số dư
+
             await _paymentService.PayWithWallet(userId, orderId);
-            return Ok("Payment success");
+
+            return Ok(new { message = "Payment success" });
         }
     }
-} 
+}

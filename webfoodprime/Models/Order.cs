@@ -27,9 +27,12 @@ namespace webfoodprime.Models
         // 🔷 Shipper (chỉ dùng cho Delivery)
         public string? ShipperId { get; set; }
         public ApplicationUser? Shipper { get; set; }
-
+        // 🔷 PaymentMethod (nullable cho InStore)
         public PaymentMethod PaymentMethod { get; set; }
-
+        // 🔷 Staff (chỉ dùng cho InStore)
+        public string? StaffId { get; set; }
+       
+        // 🔷 IsPaid (mặc định false, chỉ true khi đã thanh toán)
         public bool IsPaid { get; set; } = false;
         public DateTime? PaidAt { get; set; }
 

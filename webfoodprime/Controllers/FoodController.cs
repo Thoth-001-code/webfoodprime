@@ -5,10 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using webfoodprime.DTOs.Food;
 using webfoodprime.Models;
 using webfoodprime.Services.Interfaces;
+
 namespace webfoodprime.Controllers
 {
-
-
     [ApiController]
     [Route("api/[controller]")]
     public class FoodController : ControllerBase
@@ -20,7 +19,7 @@ namespace webfoodprime.Controllers
             _foodService = foodService;
         }
 
-        // 🔓 PUBLIC
+        // 🔓 PUBLIC - Giữ nguyên
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetAll()
@@ -37,7 +36,7 @@ namespace webfoodprime.Controllers
             return Ok(await _foodService.GetById(id, baseUrl));
         }
 
-        // 🔒 ADMIN CREATE
+        // 🔒 ADMIN CREATE - Giữ nguyên
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromForm] CreateFoodDTO dto)
@@ -65,10 +64,10 @@ namespace webfoodprime.Controllers
             return Ok("Created");
         }
 
-        // 🔥 UPDATE (CÓ UPLOAD ẢNH)
+        // 🔥 UPDATE - SỬA DTO thành UpdateFoodDTO
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Update(int id, [FromForm] CreateFoodDTO dto)
+        public async Task<IActionResult> Update(int id, [FromForm] UpdateFoodDTO dto)
         {
             string imagePath = null;
 
@@ -88,12 +87,20 @@ namespace webfoodprime.Controllers
                 imagePath = "/images/" + fileName;
             }
 
-            await _foodService.Update(id, dto, imagePath);
+            // Chuyển đổi DTO để giữ logic service cũ không bị ảnh hưởng
+            var createDto = new CreateFoodDTO
+            {
+                FoodName = dto.FoodName,
+                Price = dto.Price,
+                Image = dto.Image
+            };
+
+            await _foodService.Update(id, createDto, imagePath);
 
             return Ok("Updated");
         }
 
-        // 🔥 DELETE
+        // 🔥 DELETE - Giữ nguyên
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)

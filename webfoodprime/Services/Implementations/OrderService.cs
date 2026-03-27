@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using webfoodprime.DTOs.Admin;
 using webfoodprime.DTOs.Order;
+using webfoodprime.DTOs.Staff;
 using webfoodprime.Helpers.Enum;
 using webfoodprime.Models;
 using webfoodprime.Services.Interfaces;
@@ -184,6 +185,28 @@ namespace webfoodprime.Services.Implementations
             }
 
             order.Status = dto.Status;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+        }
+
+        // 🔥 9. STAFF MARK AS PAID (cash at counter)
+        public async Task MarkAsPaid(int orderId, string staffId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+
+            if (order == null)
+                throw new Exception("Order not found");
+
+            // If order assigned to someone else, forbid
+            if (!string.IsNullOrEmpty(order.StaffId) && order.StaffId != staffId)
+                throw new Exception("Not your order");
+
+            if (order.IsPaid)
+                throw new Exception("Order already paid");
+
+            order.IsPaid = true;
+            order.PaidAt = DateTime.UtcNow;
             order.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -432,6 +455,223 @@ namespace webfoodprime.Services.Implementations
                 }).ToList()
             });
         }
+        // STAFF
+        // 🔥 LẤY ĐƠN CHO STAFF
+        // 🔥 1. LẤY ĐƠN CHO STAFF (chưa nhận hoặc đang xử lý)
+        public async Task<List<StaffOrderDTO>> StaffGetPendingOrders()
+        {
+            return await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.Address)
+                .Include(o => o.OrderDetails)
+                .Where(o =>
+                    o.Status == OrderStatus.Pending &&
+                    o.StaffId == null) // 🔥 chưa ai nhận
+                .Select(o => new StaffOrderDTO
+                {
+                    OrderId = o.OrderId,
+                    Status = o.Status.ToString(),
+                    CustomerEmail = o.User != null ? o.User.Email : "Khách tại quầy",
+                    CustomerName = o.User != null ? o.User.UserName : "Guest",
+                    CustomerPhone = o.User != null ? o.User.PhoneNumber : string.Empty,
+                    TotalPrice = o.TotalPrice,
+                    CreatedAt = o.CreatedAt,
 
-    }//////////
-} 
+                    OrderType = o.OrderType.ToString(),
+                    IsPaid = o.IsPaid,
+                    PaymentMethod = o.PaymentMethod.ToString(),
+                    Note = o.Note,
+
+                    ItemCount = o.OrderDetails.Sum(d => d.Quantity),
+                    Address = o.Address != null ? o.Address.FullAddress : "InStore",
+                    StaffId = o.StaffId,
+                    UpdatedAt = o.UpdatedAt,
+                    FoodTotal = o.FoodTotal,
+                    ShippingFee = o.ShippingFee
+                })
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+        }
+
+        // 🔥 2. ĐƠN CỦA STAFF (đã nhận)
+        public async Task<List<StaffOrderDTO>> GetOrdersByStaff(string staffId)
+        {
+            return await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.Address)
+                .Include(o => o.OrderDetails)
+                .Where(o => o.StaffId == staffId)
+                .Select(o => new StaffOrderDTO
+                {
+                    OrderId = o.OrderId,
+                    Status = o.Status.ToString(),
+                    CustomerEmail = o.User != null ? o.User.Email : "Guest",
+                    CustomerName = o.User != null ? o.User.UserName : "Guest",
+                    CustomerPhone = o.User != null ? o.User.PhoneNumber : string.Empty,
+                    TotalPrice = o.TotalPrice,
+                    CreatedAt = o.CreatedAt,
+
+                    OrderType = o.OrderType.ToString(),
+                    IsPaid = o.IsPaid,
+                    PaymentMethod = o.PaymentMethod.ToString(),
+                    Note = o.Note,
+
+                    ItemCount = o.OrderDetails.Sum(d => d.Quantity),
+                    Address = o.Address != null ? o.Address.FullAddress : "InStore",
+                    StaffId = o.StaffId,
+                    UpdatedAt = o.UpdatedAt,
+                    FoodTotal = o.FoodTotal,
+                    ShippingFee = o.ShippingFee
+                })
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+        }
+
+        // 🔥 3. CHI TIẾT ĐƠN
+        public async Task<StaffOrderDetailDTO> GetById(int id)
+        {
+            var order = await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.Address)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(d => d.Food)
+                .FirstOrDefaultAsync(o => o.OrderId == id);
+
+            if (order == null)
+                throw new Exception("Order not found");
+
+            return new StaffOrderDetailDTO
+            {
+                OrderId = order.OrderId,
+                Status = order.Status.ToString(),
+
+                CustomerEmail = order.User?.Email ?? "Guest",
+                CustomerName = order.User?.UserName ?? "Guest",
+                CustomerPhone = order.User?.PhoneNumber ?? string.Empty,
+
+                Address = order.Address?.FullAddress ?? "InStore",
+                Note = order.Note,
+
+                OrderType = order.OrderType.ToString(),
+                PaymentMethod = order.PaymentMethod.ToString(),
+                IsPaid = order.IsPaid,
+                PaidAt = order.PaidAt,
+
+                FoodTotal = order.FoodTotal,
+                ShippingFee = order.ShippingFee,
+                TotalPrice = order.TotalPrice,
+
+                StaffId = order.StaffId,
+
+                CreatedAt = order.CreatedAt,
+                UpdatedAt = order.UpdatedAt,
+                DeliveredAt = order.DeliveredAt,
+
+                Items = order.OrderDetails.Select(d => new StaffOrderItemDTO
+                {
+                    FoodName = d.Food.FoodName,
+                    Quantity = d.Quantity,
+                    Price = d.Price,
+                    SubTotal = d.Price * d.Quantity
+                }).ToList()
+            };
+        }
+
+        // 🔥 4. STAFF NHẬN ĐƠN
+        public async Task AssignStaff(int orderId, string staffId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+
+            if (order == null)
+                throw new Exception("Order not found");
+
+            if (order.StaffId != null)
+                throw new Exception("Order already assigned");
+
+            if (order.Status != OrderStatus.Pending)
+                throw new Exception("Order is not available");
+
+            order.StaffId = staffId;
+            order.Status = OrderStatus.Confirmed;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+        }
+
+        // 🔥 5. UPDATE STATUS (generic)
+        public async Task UpdateStatus(int orderId, OrderStatus status)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+
+            if (order == null)
+                throw new Exception("Order not found");
+
+            order.Status = status;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            // 🔥 auto set DeliveredAt
+            if (status == OrderStatus.Completed)
+            {
+                order.DeliveredAt = DateTime.UtcNow;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        // 🔥 6. CONFIRM (đang làm)
+        public async Task Confirm(int orderId, string staffId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+
+            if (order == null)
+                throw new Exception("Order not found");
+
+            if (order.StaffId != staffId)
+                throw new Exception("Not your order");
+
+            order.Status = OrderStatus.Confirmed;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+        }
+
+        // 🔥 7. READY (làm xong)
+        public async Task Ready(int orderId, string staffId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+
+            if (order == null)
+                throw new Exception("Order not found");
+
+            if (order.StaffId != staffId)
+                throw new Exception("Not your order");
+
+            order.Status = OrderStatus.Ready;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+        }
+
+        // 🔥 8. CANCEL
+        public async Task Cancel(int orderId, string staffId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+
+            if (order == null)
+                throw new Exception("Order not found");
+
+            if (order.StaffId != staffId)
+                throw new Exception("Not your order");
+
+            order.Status = OrderStatus.Cancelled;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+        }
+   
+    
+    
+    }/////
+
+}//////////
+ 

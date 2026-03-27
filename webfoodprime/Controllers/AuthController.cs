@@ -3,16 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using webfoodprime.DTOs.Auth;
 using webfoodprime.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Identity;
-   
-    using System.Security.Claims;
-    using webfoodprime.Models;
-
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using webfoodprime.Models;
 
 namespace webfoodprime.Controllers
 {
-    
-
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
@@ -40,20 +36,20 @@ namespace webfoodprime.Controllers
             return Ok(result);
         }
 
-        // 🔥 API QUAN TRỌNG
+        // 🔥 API QUAN TRỌNG - THÊM userId và userName
         [HttpGet("me")]
         [Authorize]
         public async Task<IActionResult> Me()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             var user = await _userManager.FindByIdAsync(userId);
-
             var roles = await _userManager.GetRolesAsync(user);
 
             return Ok(new
             {
-                user.Email,
+                userId = user.Id,           // ✅ THÊM
+                email = user.Email,
+                userName = user.UserName,    // ✅ THÊM
                 roles
             });
         }

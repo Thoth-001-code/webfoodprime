@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - WebFoodPrime Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        /* Admin Dashboard Additional Styles */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        }
+        
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
+        .stat-icon {
+            position: absolute;
+            right: 1rem;
+            bottom: 1rem;
+            font-size: 3rem;
+            opacity: 0.1;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .dashboard-card h3 {
+            margin-bottom: 1rem;
+            color: var(--secondary);
+            font-size: 1.2rem;
+        }
+        
+        .top-food-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem;
+            border-bottom: 1px solid var(--gray-light);
+            transition: background 0.3s;
+        }
+        
+        .top-food-item:hover {
+            background: var(--light);
+        }
+        
+        .top-food-item .rank {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .top-food-item img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+        }
+        
+        .top-food-item .food-info {
+            flex: 1;
+        }
+        
+        .top-food-item .food-info h4 {
+            font-size: 1rem;
+            margin-bottom: 0.2rem;
+        }
+        
+        .top-food-item .food-info p {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .top-food-item .sold-count {
+            text-align: right;
+        }
+        
+        .top-food-item .sold-count .label {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+        
+        .top-food-item .sold-count .count {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .chart-container {
+            margin-top: 1rem;
+        }
+        
+        canvas {
+            width: 100%;
+            height: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/pages/admin/dashboard.html">🍔 WebFoodPrime Admin</a>
+            </div>
+            <div class="nav-links" id="navLinks"></div>
+            <div class="user-info" id="userInfo"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>📊 Tổng quan hệ thống</h1>
+                <p>Chào mừng bạn đến với trang quản trị</p>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-title">Tổng doanh thu</div>
+                    <div class="stat-value" id="total-revenue">0đ</div>
+                    <div class="stat-icon">💰</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Tổng đơn hàng</div>
+                    <div class="stat-value" id="total-orders">0</div>
+                    <div class="stat-icon">📦</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Đơn chờ xác nhận</div>
+                    <div class="stat-value" id="pending-orders">0</div>
+                    <div class="stat-icon">⏳</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Đang giao hàng</div>
+                    <div class="stat-value" id="delivering-orders">0</div>
+                    <div class="stat-icon">🚚</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Đã hoàn thành</div>
+                    <div class="stat-value" id="completed-orders">0</div>
+                    <div class="stat-icon">✅</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Đã hủy</div>
+                    <div class="stat-value" id="cancelled-orders">0</div>
+                    <div class="stat-icon">❌</div>
+                </div>
+            </div>
+            
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3>🔥 Top món ăn bán chạy</h3>
+                    <div id="top-foods"></div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <h3>📈 Biểu đồ doanh thu</h3>
+                    <div class="chart-container">
+                        <canvas id="revenueChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="dashboard-card" style="margin-top: 1.5rem;">
+                <h3>⚡ Thao tác nhanh</h3>
+                <div class="quick-actions">
+                    <a href="/pages/admin/foods.html" class="btn btn-primary">🍕 Quản lý món ăn</a>
+                    <a href="/pages/admin/orders.html" class="btn btn-primary">📋 Quản lý đơn hàng</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebFoodPrime - Hệ thống quản trị</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Auth.init();
+            const isAuth = await Auth.checkPageAccess(['Admin']);
+            if (isAuth) {
+                await Admin.loadDashboard();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - WebFoodPrime Shipper</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        }
+        
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
+        .stat-icon {
+            position: absolute;
+            right: 1rem;
+            bottom: 1rem;
+            font-size: 3rem;
+            opacity: 0.1;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1.5rem;
+        }
+        
+        .dashboard-card h3 {
+            margin-bottom: 1rem;
+            color: var(--secondary);
+            font-size: 1.2rem;
+        }
+        
+        .recent-order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-light);
+            transition: background 0.3s;
+        }
+        
+        .recent-order-item:hover {
+            background: var(--light);
+        }
+        
+        .order-info {
+            flex: 1;
+        }
+        
+        .order-id {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .order-address {
+            font-size: 0.85rem;
+            color: var(--gray);
+            display: block;
+            margin-top: 0.2rem;
+        }
+        
+        .order-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .order-status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .btn-action {
+            flex: 1;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-action.secondary {
+            background: linear-gradient(135deg, var(--info), #138496);
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/pages/shipper/dashboard.html">🚚 WebFoodPrime Shipper</a>
+            </div>
+            <div class="nav-links" id="navLinks"></div>
+            <div class="user-info" id="userInfo"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>📊 Dashboard Shipper</h1>
+                <p>Chào mừng bạn đến với trang quản lý giao hàng</p>
+            </div>
+            
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-title">Đơn sẵn sàng</div>
+                    <div class="stat-value" id="available-orders">0</div>
+                    <div class="stat-icon">📦</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Đang giao</div>
+                    <div class="stat-value" id="my-delivering">0</div>
+                    <div class="stat-icon">🚚</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Đã giao</div>
+                    <div class="stat-value" id="my-completed">0</div>
+                    <div class="stat-icon">✅</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Tổng thu nhập</div>
+                    <div class="stat-value" id="total-earned">0đ</div>
+                    <div class="stat-icon">💰</div>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <h3>📋 Đơn hàng gần đây</h3>
+                <div id="recent-deliveries"></div>
+            </div>
+            
+            <div class="dashboard-card">
+                <h3>⚡ Thao tác nhanh</h3>
+                <div class="quick-actions">
+                    <a href="/pages/shipper/available.html" class="btn-action">
+                        🚚 Xem đơn sẵn sàng
+                    </a>
+                    <a href="/pages/shipper/delivering.html" class="btn-action secondary">
+                        📦 Đơn đang giao
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebFoodPrime - Hệ thống giao hàng</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/shipper.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Auth.init();
+            const isAuth = await Auth.checkPageAccess(['Shipper']);
+            if (isAuth) {
+                await Shipper.loadDashboard();
+            }
+        });
+        
+        // Auto refresh every 60 seconds
+        setInterval(async () => {
+            if (window.location.pathname.includes('dashboard.html')) {
+                await Shipper.loadDashboard();
+            }
+        }, 60000);
+    </script>
+</body>
+</html>

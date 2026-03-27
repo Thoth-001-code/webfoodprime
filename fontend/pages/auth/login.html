@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - WebFoodPrime</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <a href="/">🍔 WebFoodPrime</a>
+            </div>
+            <div class="nav-links" id="navLinks"></div>
+            <div class="user-info" id="userInfo"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h2>Đăng nhập</h2>
+                    <p>Chào mừng bạn quay trở lại!</p>
+                </div>
+                
+                <form id="loginForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required placeholder="Nhập email của bạn">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Mật khẩu</label>
+                        <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu">
+                    </div>
+                    
+                    <button type="submit" id="loginBtn" class="btn-submit">Đăng nhập</button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Chưa có tài khoản? <a href="/pages/auth/register.html">Đăng ký ngay</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WebFoodPrime - Đặt đồ ăn online</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Auth.init();
+            
+            const loginForm = document.getElementById('loginForm');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            if (loginForm) {
+                loginForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const email = document.getElementById('email').value.trim();
+                    const password = document.getElementById('password').value;
+                    
+                    if (!email || !password) {
+                        Utils.showNotification('Vui lòng nhập đầy đủ thông tin', 'warning');
+                        return;
+                    }
+                    
+                    if (!Utils.validateEmail(email)) {
+                        Utils.showNotification('Email không hợp lệ', 'error');
+                        return;
+                    }
+                    
+                    loginBtn.disabled = true;
+                    loginBtn.textContent = 'Đang xử lý...';
+                    
+                    await Auth.login(email, password);
+                    
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Đăng nhập';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

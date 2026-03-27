@@ -22,6 +22,7 @@ namespace webfoodprime.Services.Implementations
             {
                 UserId = userId,
                 FullAddress = dto.FullAddress,
+                Phone = dto.phone, // 🔥 thêm
                 Note = dto.Note
             };
 

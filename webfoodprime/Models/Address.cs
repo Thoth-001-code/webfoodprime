@@ -7,7 +7,7 @@
         public string UserId { get; set; }
 
         public string FullAddress { get; set; }
-        public string Phone { get; set; } // 🔥 thêm
+        public string Phone { get; set; } // 🔥 thêm 
 
         public string? Note { get; set; }
 
