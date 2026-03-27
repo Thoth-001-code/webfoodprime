@@ -6,7 +6,11 @@
 
         public string Address { get; set; }
 
+        public string Phone { get; set; } // 🔥 thêm
+
         public decimal TotalPrice { get; set; }
+
+        public string Status { get; set; } // 🔥 thêm
 
         public string PaymentMethod { get; set; }
 

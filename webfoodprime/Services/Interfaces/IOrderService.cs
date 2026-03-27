@@ -21,6 +21,7 @@ namespace webfoodprime.Services.Interfaces
         Task CancelOrder(int orderId);
 
         Task<IEnumerable<AdminOrderDTO>> GetAllOrders(string? status);
+        Task<IEnumerable<ShipperOrderDTO>> GetShipperOrders(string shipperId);
 
 
 

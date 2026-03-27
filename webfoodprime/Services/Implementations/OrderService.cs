@@ -404,6 +404,34 @@ namespace webfoodprime.Services.Implementations
                 }).ToList()
             });
         }
+        /// SHIPPER
+        public async Task<IEnumerable<ShipperOrderDTO>> GetShipperOrders(string shipperId)
+        {
+            var orders = await _context.Orders
+                .Include(o => o.Address)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Food)
+                .Where(o => o.ShipperId == shipperId)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+
+            return orders.Select(o => new ShipperOrderDTO
+            {
+                OrderId = o.OrderId,
+                Address = o.Address != null ? o.Address.FullAddress : "N/A",
+                TotalPrice = o.TotalPrice,
+                Status = o.Status.ToString(),
+                PaymentMethod = o.PaymentMethod.ToString(),
+                Note = o.Note,
+                CreatedAt = o.CreatedAt,
+                Items = o.OrderDetails.Select(od => new OrderDetailDTO
+                {
+                    FoodName = od.Food.FoodName,
+                    Price = od.Price,
+                    Quantity = od.Quantity
+                }).ToList()
+            });
+        }
 
     }//////////
 } 

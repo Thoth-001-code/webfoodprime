@@ -10,6 +10,7 @@ namespace webfoodprime.Services.Interfaces
         Task<IEnumerable<ShipperOrderDTO>> GetAvailableOrders();
         Task TakeOrder(string shipperId, int orderId);
         Task UpdateStatus(string shipperId, UpdateOrderStatusDTO dto);
+        Task<IEnumerable<ShipperOrderDTO>> GetShipperOrders(string shipperId);
     }
 }
-  
+   

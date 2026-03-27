@@ -8,5 +8,6 @@ namespace webfoodprime.Models
 
         public virtual Wallet Wallet { get; set; }
         public virtual Cart Cart { get; set; }
+
     }
 }
