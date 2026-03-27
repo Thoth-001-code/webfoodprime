@@ -49,7 +49,7 @@ namespace webfoodprime.Controllers
         {
             var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            await _orderService.UpdateStatus(int.Parse(adminId), dto);
+            await _orderService.UpdateStatus(adminId, dto);
 
             return Ok("Updated");
         }

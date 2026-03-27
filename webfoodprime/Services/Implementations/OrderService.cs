@@ -128,7 +128,7 @@ namespace webfoodprime.Services.Implementations
             });
         }
 
-        public async Task UpdateStatus(int adminUserId, UpdateOrderStatusDTO dto)
+        public async Task UpdateStatus(string adminUserId, UpdateOrderStatusDTO dto)
         {
             var order = await _context.Orders.FindAsync(dto.OrderId);
 

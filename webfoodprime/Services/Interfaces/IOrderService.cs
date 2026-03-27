@@ -12,7 +12,7 @@ namespace webfoodprime.Services.Interfaces
 
         Task<IEnumerable<OrderResponseDTO>> GetMyOrders(string userId);
 
-        Task UpdateStatus(int adminUserId, UpdateOrderStatusDTO dto);
+        Task UpdateStatus(string adminUserId, UpdateOrderStatusDTO dto);
 
         Task CreateInStoreOrder(CreateInStoreOrderDTO dto);
 
